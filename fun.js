@@ -1,6 +1,6 @@
 const users = document.getElementById('users');
 const filter = document.getElementById('filter');
-    const rottenburrito = `<svg xmlns="http://www.w3.org/2000/svg" width="0.85em" viewBox="0 0 93 189">
+const rottenburrito = `<svg xmlns="http://www.w3.org/2000/svg" width="0.85em" viewBox="0 0 93 189">
                   <g fill="none" fill-rule="evenodd" transform="translate(1.742188 -6.878615)">
                     <g transform="translate(2.894531)">
                       <path fill="#B9CD2B" stroke="#000" stroke-width="3" d="M60.22369452 14.09588889c.08769317.19496398.11059906.41289936.0653575.62183537l-2.04128505 9.42649376 9.74451043 3.13171892c.52581225.16893785.81511605.732144.6461782 1.25795625-.06381661.19862653-.18815797.37232022-.3556113.49675681l-5.26787819 3.91383974 3.35160946 3.6062058c.37604758.40448323.35299599 1.03722842-.05148724 1.413276-.16467872.1531015-.37615027.24623477-.60027187.26436304l-8.62102762.69660495.0996039 12.67690775c.00429525.55226806-.43992441 1.00345179-.99219247 1.00774705-.22542404.00175328-.44482731-.07271234-.62261436-.21131553l-6.86736387-5.35429845-1.7937028 3.23015067c-.26818185.4828012-.87697388.65678455-1.359775.38860277-.19063406-.1058917-.34142876-.27119575-.42941118-.47072897l-2.4174445-5.4836632-10.79453279 3.88038843c-.5197331.1868045-1.092495-.08308745-1.27929943-.60282063-.07529005-.20947412-.07853783-.43808058-.00922889-.64960902l3.3289515-10.15954227-6.60227544-1.37771669c-.54062407-.11288954-.88737133-.642667-.77448173-1.18329115.04457444-.21346543.15770525-.40650931.32215746-.54972201l5.155653-4.49150471-5.12128074-7.20910418c-.31985639-.45023362-.2141648-1.07451498.23606882-1.39437136.17159454-.12190484.37728032-.18655518.58776122-.18474288l8.00953648.0679663-.99334966-7.6792362c-.0708991-.54771506.31563654-1.04920096.86335153-1.12009998.22299314-.02886545.4492071.01826528.64211866.13378254l7.82556673 4.68570487 5.13464294-7.57888954c.30973535-.45725545.93150411-.5768441 1.38875956-.26710875.19251387.13040485.33356662.32382099.39889535.5469783l1.95549066 6.67876758 5.91610142-2.66006736c.50367962-.22655087 1.09564839-.00189366 1.32219931.50178598z"/>
@@ -31,7 +31,7 @@ const filter = document.getElementById('filter');
                   </g>
                 </svg>`;
 
-    const burrito = `          <svg xmlns="http://www.w3.org/2000/svg" width="0.85em" viewBox="0 0 93 189">
+const burrito = `          <svg xmlns="http://www.w3.org/2000/svg" width="0.85em" viewBox="0 0 93 189">
                   <g fill="none" fill-rule="evenodd" transform="translate(1.742188 -6.878615)">
                     <g transform="translate(2.894531)">
                       <path fill="#B9CD2B" stroke="#000" stroke-width="3" d="M60.22369452 14.09588889c.08769317.19496398.11059906.41289936.0653575.62183537l-2.04128505 9.42649376 9.74451043 3.13171892c.52581225.16893785.81511605.732144.6461782 1.25795625-.06381661.19862653-.18815797.37232022-.3556113.49675681l-5.26787819 3.91383974 3.35160946 3.6062058c.37604758.40448323.35299599 1.03722842-.05148724 1.413276-.16467872.1531015-.37615027.24623477-.60027187.26436304l-8.62102762.69660495.0996039 12.67690775c.00429525.55226806-.43992441 1.00345179-.99219247 1.00774705-.22542404.00175328-.44482731-.07271234-.62261436-.21131553l-6.86736387-5.35429845-1.7937028 3.23015067c-.26818185.4828012-.87697388.65678455-1.359775.38860277-.19063406-.1058917-.34142876-.27119575-.42941118-.47072897l-2.4174445-5.4836632-10.79453279 3.88038843c-.5197331.1868045-1.092495-.08308745-1.27929943-.60282063-.07529005-.20947412-.07853783-.43808058-.00922889-.64960902l3.3289515-10.15954227-6.60227544-1.37771669c-.54062407-.11288954-.88737133-.642667-.77448173-1.18329115.04457444-.21346543.15770525-.40650931.32215746-.54972201l5.155653-4.49150471-5.12128074-7.20910418c-.31985639-.45023362-.2141648-1.07451498.23606882-1.39437136.17159454-.12190484.37728032-.18655518.58776122-.18474288l8.00953648.0679663-.99334966-7.6792362c-.0708991-.54771506.31563654-1.04920096.86335153-1.12009998.22299314-.02886545.4492071.01826528.64211866.13378254l7.82556673 4.68570487 5.13464294-7.57888954c.30973535-.45725545.93150411-.5768441 1.38875956-.26710875.19251387.13040485.33356662.32382099.39889535.5469783l1.95549066 6.67876758 5.91610142-2.66006736c.50367962-.22655087 1.09564839-.00189366 1.32219931.50178598z"/>
@@ -88,22 +88,22 @@ filtercSwitch.checked = (userType === 'member' ) ? true : false;
 
 async function fetcher (type, {username,listType, scoreType}) {
     switch (type) {
-    case 'scoreboard':
-        const res = await fetch(`/api/scoreboard/${listType}/${scoreType}`);
-        const json = await res.json();
-        return json.data;
-        break;
-    case 'userStats':
-        const res1 = await fetch(`/api/userstats/${username}`);
-        const json1 = await res1.json();
-        return json1.data;
-        break;
-    case 'userScore':
-        const res2 = await fetch(`/api/userscore/${username}/${listType}/${scoreType}`);
-        const json2 = await res2.json();
-        const {data} = json2;
-        return json2;
-        break;
+        case 'scoreboard':
+            const res = await fetch(`/api/scoreboard/${listType}/${scoreType}`);
+            const json = await res.json();
+            return json.data;
+            break;
+        case 'userStats':
+            const res1 = await fetch(`/api/userstats/${username}`);
+            const json1 = await res1.json();
+            return json1.data;
+            break;
+        case 'userScore':
+            const res2 = await fetch(`/api/userscore/${username}/${listType}/${scoreType}`);
+            const json2 = await res2.json();
+            const {data} = json2;
+            return json2;
+            break;
     }
 
 };
@@ -161,13 +161,13 @@ function sortUsers(sort = false) {
     if(sort) data.sort((a, b) => Math.sign(b.score - a.score));
 
     store = data.map((item, i) => {
-            const mappedItem = Object.assign({}, item);
-            const position = i + 1;
+        const mappedItem = Object.assign({}, item);
+        const position = i + 1;
 
-            mappedItem.last_position = ('position' in mappedItem) ? mappedItem.position : 0;
-            mappedItem.position = position;
+        mappedItem.last_position = ('position' in mappedItem) ? mappedItem.position : 0;
+        mappedItem.position = position;
 
-            return mappedItem;
+        return mappedItem;
     });
 }
 
@@ -206,9 +206,9 @@ function addStatsRow(user, container) {
             <img class="avatar" width="30" height="30" src="${user.avatar}">
             <strong>${user.name}</strong>
             <span class="score mini good">${user.scoreinc}&nbsp;&nbsp;&nbsp;</span>
-            <span class="score mini overdrawn">${user.scoreincOverdrawn}&nbsp;&nbsp;&nbsp;</span>
+<!--            <span class="score mini overdrawn">${user.scoreincOverdrawn}&nbsp;&nbsp;&nbsp;</span>-->
             <span class="score mini bad">${user.scoredec}&nbsp;&nbsp;&nbsp;</span>
-            <span class="score mini overdrawn">${user.scoredecOverdrawn}</span>
+<!--            <span class="score mini overdrawn">${user.scoredecOverdrawn}</span>-->
         </li>
     `;
 
@@ -220,29 +220,29 @@ function addUserInfo(user, container) {
     const html = `
 <div class="scoreboard__user__stats__column" >
 
-<div class="scoreboard__user__stats__title"><strong>Total</strong></div>
+<div class="scoreboard__user__stats__title"><strong>전체</strong></div>
   <ol class="scoreboard__user__stats__list">
     <li>
-      <strong>Received</strong>
+      <strong>받음</strong>
       <span class="score mini">${user.received}</span>
     </li>
     <li>
-      <strong>Given</strong>
+      <strong>보냄</strong>
       <span class="score mini">${user.given}</span>
     </li>
   </ol>
 </div>
 
 <div class="scoreboard__user__stats__column">
-  <div class="scoreboard__user__stats__title"><strong>Today</strong></div>
+  <div class="scoreboard__user__stats__title"><strong>오늘</strong></div>
 
   <ol class="scoreboard__user__stats__list">
     <li>
-      <strong>Received</strong>
+      <strong>받음</strong>
       <span class="score mini">${user.receivedToday}</span>
     </li>
     <li>
-      <strong>Given</strong>
+      <strong>보냄</strong>
       <span class="score mini">${user.givenToday}</span>
     </li>
   </ol>
@@ -343,13 +343,13 @@ function createElement(data, display) {
   <div class="scoreboard__user__stats__today">
 
     <div class="scoreboard__user__stats__column">
-<div class="scoreboard__user__stats__title"><strong>From ( Today )</strong></div>
+<div class="scoreboard__user__stats__title"><strong>Today Received</strong></div>
       <ol class="scoreboard__user__stats__list" data-today-from>
       </ol>
     </div>
 
     <div class="scoreboard__user__stats__column">
-      <strong class="scoreboard__user__stats__title">To ( Today )</strong>
+      <strong class="scoreboard__user__stats__title">Today Given</strong>
       <ol class="scoreboard__user__stats__list" data-today-to>
       </ol>
     </div>
@@ -358,13 +358,13 @@ function createElement(data, display) {
 
 
   <div class="scoreboard__user__stats__column">
-    <strong class="scoreboard__user__stats__title">From</strong>
+    <strong class="scoreboard__user__stats__title">Total Received</strong>
     <ol class="scoreboard__user__stats__list" data-from>
     </ol>
   </div>
 
   <div class="scoreboard__user__stats__column">
-    <strong class="scoreboard__user__stats__title">To</strong>
+    <strong class="scoreboard__user__stats__title">Total Given</strong>
     <ol class="scoreboard__user__stats__list" data-to>
     </ol>
   </div>

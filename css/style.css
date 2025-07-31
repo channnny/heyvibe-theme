@@ -11,12 +11,12 @@ article, aside, canvas, details, embed,
 figure, figcaption, footer, header, hgroup,
 menu, nav, output, ruby, section, summary,
 time, mark, audio, video {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	font-size: 100%;
-	font: inherit;
-	vertical-align: baseline;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
 }
 
 html {
@@ -28,11 +28,18 @@ html {
     box-sizing: inherit;
 }
 
+@font-face {
+    font-family: 'NEXON Lv1 Gothic OTF';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/NEXON Lv1 Gothic OTF.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 body {
     margin: 0;
     line-height: 1;
     background: #fffff421;
-    font-family: Roboto, sans-serif;
+    font-family: 'NEXON Lv1 Gothic OTF', sans-serif;
 }
 
 #header {
@@ -58,87 +65,87 @@ body {
 }
 
 #filter p {
-    display:inline;
-
+    /*display:inline;*/
+    text-align: center;
 }
 
 .c-switch {
-  --switch-height: 35px;
-  --switch-handle-size: calc(var(--switch-height) - 6px);
-  display: inline-block;
-  position: relative;
-  min-width: 50px;
-  height: var(--switch-height);
-  border: 1px solid #131314;
-  background: #17191c;
-  color:#fff;
-  border-radius: var(--switch-height);
-  cursor: pointer;
-  overflow: hidden;
-  margin-left: 8px;
+    --switch-height: 35px;
+    --switch-handle-size: calc(var(--switch-height) - 6px);
+    display: inline-block;
+    position: relative;
+    min-width: 50px;
+    height: var(--switch-height);
+    border: 1px solid #131314;
+    background: #17191c;
+    color:#fff;
+    border-radius: var(--switch-height);
+    cursor: pointer;
+    overflow: hidden;
+    margin-left: 8px;
 }
 
 .c-switch__input {
-  position: absolute;
-  opacity: 0;
+    position: absolute;
+    opacity: 0;
 }
 
 .c-switch__values {
-  display: flex;
-  height: 100%;
+    display: flex;
+    height: 100%;
 }
 
 .c-switch__value {
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  padding: 0 16px;
-  flex: 1;
-  transition: opacity .3s;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0 16px;
+    flex: 1;
+    transition: opacity .3s;
 }
 
 .c-switch__value--true {
-  left: 0;
-  justify-content: flex-start;
+    left: 0;
+    justify-content: flex-start;
 }
 
 .c-switch__value--false {
-  right: 0;
-  justify-content: flex-end;
+    right: 0;
+    justify-content: flex-end;
 }
 
 .c-switch__values::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 3px;
-  transform: translate(0, -50%);
-  width: var(--switch-handle-size);
-  height: var(--switch-handle-size);
-  border-radius: var(--switch-handle-size);
-  background: #F4C99D;
-  transition: left .3s, transform .3s, width .3s;
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 3px;
+    transform: translate(0, -50%);
+    width: var(--switch-handle-size);
+    height: var(--switch-handle-size);
+    border-radius: var(--switch-handle-size);
+    background: #A14CE5;
+    transition: left .3s, transform .3s, width .3s;
 }
 
 .c-switch__values:hover::after {
-  background: #DEAE7E;
+    background: #8E3BD1;
 }
 
 .c-switch__values:active::after {
-  width: calc(var(--switch-handle-size) + 10px);
+    width: calc(var(--switch-handle-size) + 10px);
 }
 
 .c-switch__input:checked + .c-switch__values::after {
-  left: calc(100% - 3px);
-  transform: translate(-100%, -50%);
+    left: calc(100% - 3px);
+    transform: translate(-100%, -50%);
 }
 
 .c-switch__input:not(:checked) + .c-switch__values .c-switch__value--true {
-  opacity: 0;
+    opacity: 0;
 }
 
 .c-switch__input:checked + .c-switch__values .c-switch__value--false {
-  opacity: 0;
+    opacity: 0;
 }
 
 
@@ -332,8 +339,8 @@ h1 {
     }
 
     #filter p{
-        display:inline;
-
+        /*display:inline;*/
+        text-align: center;
     }
     .scoreboard {
         max-width: 720px;
@@ -354,16 +361,16 @@ h1 {
     }
 }
 
-@media (min-width: 1420px){
-    .scoreboard {
-        max-width: 1420px;
-        max-height: 95vh;
-        margin: auto;
-        display: flex;
-        flex-wrap: wrap;
-        flex-direction: column;
-        justify-content: center;
-        padding-bottom: 10px;
-        overflow: hidden;
-    }
-}
+/*@media (min-width: 1420px){*/
+/*    .scoreboard {*/
+/*        max-width: 1420px;*/
+/*        max-height: 95vh;*/
+/*        margin: auto;*/
+/*        display: flex;*/
+/*        flex-wrap: wrap;*/
+/*        flex-direction: column;*/
+/*        justify-content: center;*/
+/*        padding-bottom: 10px;*/
+/*        overflow: hidden;*/
+/*    }*/
+/*}*/
