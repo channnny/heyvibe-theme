@@ -30,7 +30,6 @@ const rottenburrito = `<svg xmlns="http://www.w3.org/2000/svg" width="0.85em" vi
                     <circle cx="39.2578125" cy="143.878615" r="1" fill="#000" fill-opacity=".17"/>
                   </g>
                 </svg>`;
-
 const burrito = `          <svg xmlns="http://www.w3.org/2000/svg" width="0.85em" viewBox="0 0 93 189">
                   <g fill="none" fill-rule="evenodd" transform="translate(1.742188 -6.878615)">
                     <g transform="translate(2.894531)">
@@ -64,66 +63,209 @@ const burrito = `          <svg xmlns="http://www.w3.org/2000/svg" width="0.85em
 
 let store = [];
 
-const setLocalStorage = (key, value) => {
-    return localStorage.setItem(key, value);
-};
+const setLocalStorage = (key, value) => localStorage.setItem(key, value);
 
-const getLocalStorage = (key) => {
-    return localStorage.getItem(key);
-};
+const getLocalStorage = (key) => localStorage.getItem(key);
 
 const burritoHost = window.location.hostname;
 
 let listType = getLocalStorage('listType') || 'to';
 let scoreType = getLocalStorage('scoreType') || 'inc';
 let userType = getLocalStorage('userType') || 'member';
+let selectedYear = getLocalStorage('selectedYear') || 'all';
+let selectedMonth = getLocalStorage('selectedMonth') || 'all';
+// let isDateFilterEnabled = getLocalStorage('isDateFilterEnabled') || true;
+const toBool = (v, def = true) => (v == null ? def : (v === true || v === 'true'));
+let isDateFilterEnabled = toBool(getLocalStorage('isDateFilterEnabled'), true);
 
 const filteraSwitch = document.getElementById('switchToFromInput');
 const filterbSwitch = document.getElementById('switchTypeInput');
 const filtercSwitch = document.getElementById('switchUserTypesInput');
+const dateFilterSwitch = document.getElementById('switchDateFilterInput');
+const dateFilterUI = document.getElementById('dateFilterUI');
+const yearSelect = document.getElementById('yearSelect');
+const monthSelect = document.getElementById('monthSelect');
 
-filteraSwitch.checked = (listType === 'to' ) ? true : false;;
-filterbSwitch.checked = (scoreType === 'inc' ) ? true : false;
-filtercSwitch.checked = (userType === 'member' ) ? true : false;
+// 년도 선택 옵션 초기화
+function initializeYearSelect() {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2020; // 시작 년도
 
-async function fetcher (type, {username,listType, scoreType}) {
+    for (let year = currentYear; year >= startYear; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    }
+
+    if (!isDateFilterEnabled && selectedYear !== 'all') {
+        yearSelect.value = String(selectedYear);
+    }
+}
+
+// 월 선택 옵션 초기화
+function initializeMonthSelect() {
+    monthSelect.value = selectedMonth;
+    // 부분 모드에서 저장된 월로 선택값 고정
+    if (!isDateFilterEnabled && selectedMonth !== 'all') {
+        monthSelect.value = String(selectedMonth);
+    }
+}
+
+// 날짜 필터 UI 표시/숨김 처리
+function toggleDateFilterUI() {
+    if (isDateFilterEnabled) {
+        // 전체 모드
+        dateFilterUI.style.display = 'none';
+        selectedYear = 'all';
+        selectedMonth = 'all';
+    } else {
+        // 부분 모드
+        dateFilterUI.style.display = 'block';
+        // 부분 모드일 때 오늘 날짜를 기본값으로 설정
+        if (selectedYear === 'all') {
+            selectedYear = new Date().getFullYear();
+            selectedMonth = new Date().getMonth() + 1;
+            yearSelect.value = selectedYear;
+            monthSelect.value = selectedMonth;
+        }
+    }
+
+    setLocalStorage('selectedYear', selectedYear);
+    setLocalStorage('selectedMonth', selectedMonth);
+    setLocalStorage('isDateFilterEnabled', String(isDateFilterEnabled));
+}
+
+// 날짜 필터 스위치 이벤트 리스너
+dateFilterSwitch.addEventListener('change', function () {
+    // isDateFilterEnabled = this.checked;
+    isDateFilterEnabled = !!this.checked;
+    setLocalStorage('isDateFilterEnabled', String(isDateFilterEnabled));
+    toggleDateFilterUI();
+    getScoreBoard();
+});
+
+// 년도/월 필터링 적용
+function applyDateFilter() {
+    selectedYear = yearSelect.value;
+    selectedMonth = monthSelect.value;
+
+    setLocalStorage('selectedYear', selectedYear);
+    setLocalStorage('selectedMonth', selectedMonth);
+
+    getScoreBoard();
+}
+
+// 년도/월 필터링 이벤트 리스너
+yearSelect.addEventListener('change', applyDateFilter);
+monthSelect.addEventListener('change', applyDateFilter);
+
+// 초기화
+initializeYearSelect();
+initializeMonthSelect();
+
+// 스위치 초기 상태 설정
+// dateFilterSwitch.checked = isDateFilterEnabled;
+dateFilterSwitch.checked = !!isDateFilterEnabled;
+
+// UI 상태 설정
+toggleDateFilterUI();
+
+filteraSwitch.checked = (listType === 'to');
+filterbSwitch.checked = (scoreType === 'inc');
+filtercSwitch.checked = (userType === 'member');
+
+async function fetcher(type, {
+    username, listType, scoreType, year, month,
+}) {
     switch (type) {
         case 'scoreboard':
-            const res = await fetch(`/api/scoreboard/${listType}/${scoreType}`);
+            let yearParam = year;
+            let monthParam = month;
+
+            // 전체 모드이거나 "전체" 선택 시 파라미터를 전송하지 않음
+            if (isDateFilterEnabled || year === 'all') yearParam = undefined;
+            if (isDateFilterEnabled || month === 'all') monthParam = undefined;
+
+            const queryParams = [];
+            // if (yearParam) queryParams.push(`year=${yearParam}`);
+            // if (monthParam) queryParams.push(`month=${monthParam}`);
+            // const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+            // const res = await fetch(`/api/scoreboard/${listType}/${scoreType}${queryString}`);
+
+            if (yearParam) queryParams.push(`year=${yearParam}`);
+            if (monthParam) queryParams.push(`month=${monthParam}`);
+            const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+            const res = await fetch(`/api/scoreboard/${listType}/${scoreType}${queryString}`);
+
             const json = await res.json();
             return json.data;
             break;
         case 'userStats':
-            const res1 = await fetch(`/api/userstats/${username}`);
+            let yearParam1 = year;
+            let monthParam1 = month;
+
+            if (isDateFilterEnabled || year === 'all') yearParam1 = undefined;
+            if (isDateFilterEnabled || month === 'all') monthParam1 = undefined;
+
+            const queryParams1 = [];
+            // if (yearParam1) queryParams1.push(`year=${yearParam1}`);
+            // if (monthParam1) queryParams1.push(`month=${monthParam1}`);
+            // const queryString1 = queryParams1.length > 0 ? `?${queryParams1.join('&')}` : '';
+            // const res1 = await fetch(`/api/userstats/${username}${queryString1}`);
+            if (yearParam1) queryParams1.push(`year=${yearParam1}`);
+            if (monthParam1) queryParams1.push(`month=${monthParam1}`);
+            const queryString1 = queryParams1.length > 0 ? `?${queryParams1.join('&')}` : '';
+            const res1 = await fetch(`/api/userstats/${username}${queryString1}`);
+
             const json1 = await res1.json();
             return json1.data;
             break;
         case 'userScore':
-            const res2 = await fetch(`/api/userscore/${username}/${listType}/${scoreType}`);
+            let yearParam2 = year;
+            let monthParam2 = month;
+
+            if (isDateFilterEnabled || year === 'all') yearParam2 = undefined;
+            if (isDateFilterEnabled || month === 'all') monthParam2 = undefined;
+
+            const queryParams2 = [];
+            // if (yearParam2) queryParams2.push(`year=${yearParam2}`);
+            // if (monthParam2) queryParams2.push(`month=${monthParam2}`);
+            // const queryString2 = queryParams2.length > 0 ? `?${queryParams2.join('&')}` : '';
+            // const res2 = await fetch(`/api/userscore/${username}/${listType}/${scoreType}${queryString2}`);
+            if (yearParam2) queryParams2.push(`year=${yearParam2}`);
+            if (monthParam2) queryParams2.push(`month=${monthParam2}`);
+            const queryString2 = queryParams2.length > 0 ? `?${queryParams2.join('&')}` : '';
+            const res2 = await fetch(`/api/userscore/${username}/${listType}/${scoreType}${queryString2}`);
+
             const json2 = await res2.json();
-            const {data} = json2;
+            const { data } = json2;
             return json2;
             break;
     }
+}
 
-};
-
-const getScoreBoard = async() => {
-    store = await fetcher('scoreboard',{listType, scoreType});
-    sortUsers();
+const getScoreBoard = async () => {
+    const raw = await fetcher('scoreboard', {
+        listType, scoreType, year: selectedYear, month: selectedMonth,
+    });
+    // ✅ score를 숫자로 보정
+    store = (raw || []).map((x) => ({ ...x, score: Number(x.score) || 0 }));
+    sortUsers(); // 여전히 호출
     render();
 };
 
 getScoreBoard();
 
 
-
 filteraSwitch.addEventListener('click', async (ev) => {
     const list = (listType === 'to') ? 'from' : 'to';
     listType = list;
-    setLocalStorage('listType',list);
+    setLocalStorage('listType', list);
 
-    store = await fetcher('scoreboard',{listType, scoreType});
+    store = await fetcher('scoreboard', {
+        listType, scoreType, year: selectedYear, month: selectedMonth,
+    });
     sortUsers();
     render();
 });
@@ -131,8 +273,10 @@ filteraSwitch.addEventListener('click', async (ev) => {
 filterbSwitch.addEventListener('click', async (ev) => {
     const score = (scoreType === 'inc') ? 'dec' : 'inc';
     scoreType = score;
-    setLocalStorage('scoreType',score);
-    store = await fetcher('scoreboard',{listType, scoreType});
+    setLocalStorage('scoreType', score);
+    store = await fetcher('scoreboard', {
+        listType, scoreType, year: selectedYear, month: selectedMonth,
+    });
     sortUsers();
     render();
 });
@@ -140,36 +284,35 @@ filterbSwitch.addEventListener('click', async (ev) => {
 filtercSwitch.addEventListener('click', async (ev) => {
     const memberType = (userType === 'member') ? 'all' : 'member';
     userType = memberType;
-    setLocalStorage('userType',memberType);
-    store = await fetcher('scoreboard',{listType, scoreType});
+    setLocalStorage('userType', memberType);
+    store = await fetcher('scoreboard', {
+        listType, scoreType, year: selectedYear, month: selectedMonth,
+    });
     sortUsers();
     render();
 });
 
+function sortUsers() {
+    const data = (userType === 'member')
+        ? store.filter((item) => item.memberType === userType)
+        : store.slice();
 
-
-function sortUsers(sort = false) {
-
-    let data;
-
-    if(userType === 'member'){
-        data = store.filter(item => item.memberType === userType);
-    }else{
-        data = store;
-    }
-
-    if(sort) data.sort((a, b) => Math.sign(b.score - a.score));
-
-    store = data.map((item, i) => {
-        const mappedItem = Object.assign({}, item);
-        const position = i + 1;
-
-        mappedItem.last_position = ('position' in mappedItem) ? mappedItem.position : 0;
-        mappedItem.position = position;
-
-        return mappedItem;
+    // ✅ 내림차순 정렬 (숫자 보장 + 동점 시 이름으로 안정정렬)
+    data.sort((a, b) => {
+        const as = Number(a.score) || 0;
+        const bs = Number(b.score) || 0;
+        if (bs !== as) return bs - as;
+        return (a.name || '').localeCompare(b.name || '');
     });
+
+    // 순위 재계산
+    store = data.map((item, i) => ({
+        ...item,
+        last_position: ('position' in item) ? item.position : 0,
+        position: i + 1,
+    }));
 }
+
 
 function displayItem(element, wait, rerender) {
     setTimeout(() => {
@@ -195,68 +338,91 @@ async function displayStats(data, element) {
         statsEl.style.cssText = 'height: 0px';
         statsEl.classList.remove('display');
     } else {
-        const res = await fetcher("userStats", {username: data.username});
+        const res = await fetcher('userStats', { username: data.username, year: selectedYear, month: selectedMonth });
         addStats(res);
     }
 }
 
 function addStatsRow(user, container) {
+    // 현재 전역 scoreType 사용
+    const value = (scoreType === 'inc')
+        ? (Number(user.scoreinc) || 0)
+        : (Number(user.scoredec) || 0);
+
     const html = `
-        <li>
-            <img class="avatar" width="30" height="30" src="${user.avatar}">
-            <strong>${user.name}</strong>
-            <span class="score mini good">${user.scoreinc}&nbsp;&nbsp;&nbsp;</span>
-<!--            <span class="score mini overdrawn">${user.scoreincOverdrawn}&nbsp;&nbsp;&nbsp;</span>-->
-            <span class="score mini bad">${user.scoredec}&nbsp;&nbsp;&nbsp;</span>
-<!--            <span class="score mini overdrawn">${user.scoredecOverdrawn}</span>-->
-        </li>
-    `;
+       <li>
+         <img class="avatar" width="30" height="30" src="${user.avatar}">
+         <strong>${user.name}</strong>
+         <span class="score mini ${scoreType === 'inc' ? 'good' : 'bad'}">${value}&nbsp;&nbsp;&nbsp;</span>
+       </li>
+     `;
 
     container.appendChild(document.createRange().createContextualFragment(html));
 }
 
-function addUserInfo(user, container) {
+function renderSortedList(container, namedList = [], totalCount = 0) {
+    const normalized = (namedList || []).map((u) => ({
+        ...u,
+        scoreinc: Number(u.scoreinc) || 0,
+        scoredec: Number(u.scoredec) || 0,
+    }));
 
+    // 리스트 안에 이미 '익명' 항목이 있는지(중복 방지)
+    const hasExplicitAnon = normalized.some((u) => (u.name || '').trim() === '익명');
+
+    const namedSum = (scoreType === 'inc')
+        ? normalized.reduce((acc, u) => acc + u.scoreinc, 0)
+        : normalized.reduce((acc, u) => acc + u.scoredec, 0);
+
+    const total = Number(totalCount) || 0;
+    const anonCount = Math.max(0, total - namedSum);
+
+    const merged = normalized.slice();
+    if (!hasExplicitAnon && anonCount > 0) {
+        merged.push({
+            name: '익명',
+            avatar: 'default_avatar.jpg',
+            scoreinc: (scoreType === 'inc') ? anonCount : 0,
+            scoredec: (scoreType === 'dec') ? anonCount : 0,
+        });
+    }
+
+    merged.sort((a, b) => {
+        const as = (scoreType === 'inc') ? a.scoreinc : a.scoredec;
+        const bs = (scoreType === 'inc') ? b.scoreinc : b.scoredec;
+        if (bs !== as) return bs - as;
+        return (a.name || '').localeCompare(b.name || '');
+    });
+
+    container.innerHTML = '';
+    merged.forEach((u) => addStatsRow(u, container));
+}
+
+function addUserInfoTotals(container, totals) {
     const html = `
-<div class="scoreboard__user__stats__column" >
-
-<div class="scoreboard__user__stats__title"><strong>전체</strong></div>
-  <ol class="scoreboard__user__stats__list">
-    <li>
-      <strong>받음</strong>
-      <span class="score mini">${user.received}</span>
-    </li>
-    <li>
-      <strong>보냄</strong>
-      <span class="score mini">${user.given}</span>
-    </li>
-  </ol>
-</div>
-
-<div class="scoreboard__user__stats__column">
-  <div class="scoreboard__user__stats__title"><strong>오늘</strong></div>
-
-  <ol class="scoreboard__user__stats__list">
-    <li>
-      <strong>받음</strong>
-      <span class="score mini">${user.receivedToday}</span>
-    </li>
-    <li>
-      <strong>보냄</strong>
-      <span class="score mini">${user.givenToday}</span>
-    </li>
-  </ol>
-</div>`;
-
+  <div class="scoreboard__user__stats__column">
+    <div class="scoreboard__user__stats__title"><strong>전체</strong></div>
+    <ol class="scoreboard__user__stats__list">
+      <li><strong>받음</strong><span class="score mini">${totals.total.received}</span></li>
+      <li><strong>보냄</strong><span class="score mini">${totals.total.given}</span></li>
+    </ol>
+  </div>
+  <div class="scoreboard__user__stats__column">
+    <div class="scoreboard__user__stats__title"><strong>오늘</strong></div>
+    <ol class="scoreboard__user__stats__list">
+      <li><strong>받음</strong><span class="score mini">${totals.today.received}</span></li>
+      <li><strong>보냄</strong><span class="score mini">${totals.today.given}</span></li>
+    </ol>
+  </div>`;
     container.innerHTML = html;
 }
+
 function addStats(data) {
     const element = document.getElementById(`user:${data.user.username}`);
     const statsEl = element.querySelector('[data-stats]');
     const infoEl = element.querySelector('[data-info]');
     const todayFromEl = element.querySelector('[data-today-from]');
     const todayToEl = element.querySelector('[data-today-to]');
-
     const fromEl = element.querySelector('[data-from]');
     const toEl = element.querySelector('[data-to]');
 
@@ -265,42 +431,95 @@ function addStats(data) {
     todayFromEl.innerHTML = '';
     todayToEl.innerHTML = '';
 
-    addUserInfo(data.user,infoEl);
-    if(data.givenToday){
-        data.givenToday.forEach((user) => addStatsRow(user,todayToEl));
-    }
+    const sumInc = (list = []) => list.reduce((a, u) => a + (Number(u.scoreinc) || 0), 0);
 
-    if(data.receivedToday){
-        data.receivedToday.forEach((user) => addStatsRow(user,todayFromEl));
-    }
+    const namedReceived = sumInc(data.received || []);
+    const namedGiven = sumInc(data.given || []);
 
+    // 서버에서 오는 익명 누계(없으면 0)
+    let anonReceived = Number(
+        data.user?.receivedAnon
+        ?? data.user?.receivedAnonymous
+        ?? data.user?.anonReceived ?? 0,
+    );
+    const anonGiven = Number(
+        data.user?.givenAnon
+        ?? data.user?.givenAnonymous
+        ?? data.user?.anonGiven ?? 0,
+    );
 
-    if (data.given) {
-        data.given.forEach((user) => addStatsRow(user, toEl));
-    }
+    // ✅ 오늘 받은 총합과, 오늘의 '이름 합'으로 오늘 익명 수 추정
+    const todayTotalReceived = Number(
+        data.user?.receivedToday ?? sumInc(data.receivedToday || []),
+    );
+    const todayNamedReceived = sumInc(data.receivedToday || []);
+    const todayAnon = Math.max(0, todayTotalReceived - todayNamedReceived);
 
-    if (data.received) {
-        data.received.forEach((user) => addStatsRow(user, fromEl));
-    }
+    // ✅ 서버가 익명 누계를 안 줄 때만 오늘 익명으로 보정
+    if (!anonReceived) anonReceived = todayAnon;
+
+    const apiReceived = Number(data.user?.received);
+    const apiGiven = Number(data.user?.given);
+
+    // 서버값 vs (이름합+익명) 중 더 큰 값 사용
+    const totalReceivedAll = Math.max(
+        Number.isFinite(apiReceived) ? apiReceived : 0,
+        namedReceived + anonReceived,
+    );
+    const totalGivenAll = Math.max(
+        Number.isFinite(apiGiven) ? apiGiven : 0,
+        namedGiven + anonGiven,
+    );
+
+    // 날짜필터 모드에 따라 선택
+    const totalReceived = isDateFilterEnabled
+        ? totalReceivedAll
+        : (Number.isFinite(Number(
+            data.user?.receivedInRange
+            ?? data.user?.receivedFiltered
+            ?? data.user?.receivedMonth
+            ?? data.user?.receivedPeriod,
+        )) ? Number(
+            data.user?.receivedInRange
+            ?? data.user?.receivedFiltered
+            ?? data.user?.receivedMonth
+            ?? data.user?.receivedPeriod,
+        ) : (namedReceived + anonReceived));
+
+    const totalGiven = isDateFilterEnabled
+        ? totalGivenAll
+        : (Number.isFinite(Number(
+            data.user?.givenInRange
+            ?? data.user?.givenFiltered
+            ?? data.user?.givenMonth
+            ?? data.user?.givenPeriod,
+        )) ? Number(
+            data.user?.givenInRange
+            ?? data.user?.givenFiltered
+            ?? data.user?.givenMonth
+            ?? data.user?.givenPeriod,
+        ) : (namedGiven + anonGiven));
+
+    const totals = {
+        total: { received: totalReceived, given: totalGiven },
+        today: { received: todayTotalReceived, given: sumInc(data.givenToday || []) },
+    };
+
+    addUserInfoTotals(infoEl, totals);
+
+    // ✅ 하단 리스트에 총합(=익명 포함)을 넘겨서 익명을 자동 추가
+    renderSortedList(todayFromEl, data.receivedToday || [], totals.today.received);
+    renderSortedList(todayToEl, data.givenToday || [], totals.today.given);
+    renderSortedList(fromEl, data.received || [], totals.total.received);
+    renderSortedList(toEl, data.given || [], totals.total.given);
 
     requestAnimationFrame(() => {
         statsEl.classList.add('display');
-        statsEl.style.cssText = `
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: auto;
-            transition: none;
-        `;
-
+        statsEl.style.cssText = 'position:absolute;left:0;right:0;height:auto;transition:none;';
         requestAnimationFrame(() => {
-            const height = statsEl.getBoundingClientRect().height;
-
+            const h = statsEl.getBoundingClientRect().height;
             statsEl.style.cssText = '';
-
-            requestAnimationFrame(() => {
-                statsEl.style.cssText = `height: ${height}px`;
-            });
+            requestAnimationFrame(() => { statsEl.style.cssText = `height:${h}px`; });
         });
     });
 }
@@ -316,12 +535,52 @@ function createElement(data, display) {
         element.className += ' display';
     }
 
+    if (data.position === 1) {
+        element.className += ' top-rank';
+    }
+
+    // ✅ 익명 점수 포함하여 보정
+    const rawScore = Number(data.score) || 0;
+    const anonReceived = Number(data.receivedAnon ?? data.receivedAnonymous ?? data.anonReceived ?? 0);
+    const anonGiven = Number(data.givenAnon ?? data.givenAnonymous ?? data.anonGiven ?? 0);
+
+    let fixedScore = rawScore;
+    if (listType === 'to' && scoreType === 'inc') {
+        fixedScore = rawScore + anonReceived;
+    } else if (listType === 'from' && scoreType === 'inc') {
+        fixedScore = rawScore + anonGiven;
+    }
+
+    // ✅ 익명 포함 점수로 설정
     element.setAttribute('data-uuid', data.username);
-    element.setAttribute('data-score', data.score);
+    element.setAttribute('data-score', fixedScore);
+
+    function renderPosition(pos) {
+        const medals = {
+            1: '👑',
+            2: '🥈',
+            3: '🥉',
+        };
+
+        const classes = {
+            1: 'gold',
+            2: 'silver',
+            3: 'bronze',
+        };
+
+        return medals[pos]
+            ? `<span class="score position mini medal medal--${classes[pos]}">${medals[pos]}</span>`
+            : `<span class="score position mini">${pos}</span>`;
+    }
+
 
     element.innerHTML = `
- <div class="scoreboard__user__row scoreboard__user__summary">
-<div><span class="score position mini">${data.position}.</span></div>
+  <div class="scoreboard__user__row scoreboard__user__summary">
+
+    <div>
+        ${renderPosition(data.position)}
+    </div>
+
 
   <div>
     <img class="avatar" width="48" height="48" src="${data.avatar}" alt="">
@@ -329,7 +588,7 @@ function createElement(data, display) {
   <div class="displayname">${data.name}
 <span data-element="level" class="level">${data.level ? level(data.level) : ''}</span>
 </div>
-  <div><span data-element="score" class="score">${data.score}</span></div>
+  <div><span data-element="score" class="score">${fixedScore}</span></div>
 </div>
 
 
@@ -340,21 +599,21 @@ function createElement(data, display) {
   </div>
 
 
-  <div class="scoreboard__user__stats__today">
+<!--  <div class="scoreboard__user__stats__today">-->
 
-    <div class="scoreboard__user__stats__column">
-<div class="scoreboard__user__stats__title"><strong>Today Received</strong></div>
-      <ol class="scoreboard__user__stats__list" data-today-from>
-      </ol>
-    </div>
+<!--    <div class="scoreboard__user__stats__column">-->
+<!--<div class="scoreboard__user__stats__title"><strong>Today Received</strong></div>-->
+<!--      <ol class="scoreboard__user__stats__list" data-today-from>-->
+<!--      </ol>-->
+<!--    </div>-->
 
-    <div class="scoreboard__user__stats__column">
-      <strong class="scoreboard__user__stats__title">Today Given</strong>
-      <ol class="scoreboard__user__stats__list" data-today-to>
-      </ol>
-    </div>
+<!--    <div class="scoreboard__user__stats__column">-->
+<!--      <strong class="scoreboard__user__stats__title">Today Given</strong>-->
+<!--      <ol class="scoreboard__user__stats__list" data-today-to>-->
+<!--      </ol>-->
+<!--    </div>-->
 
-  </div>
+<!--  </div>-->
 
 
   <div class="scoreboard__user__stats__column">
@@ -389,22 +648,25 @@ function render(refresh) {
     const wait = 200;
     let currentWait = 0;
 
-    users.innerHTML = '';
-    const top20 = store.slice(0,20);
-    store.forEach((item) => {
-        currentWait += wait;
+    // ✅ 혹시 외부에서 store가 뒤틀렸을 상황 방어
+    let data = store.slice().sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+    data = data.map((item, i) => ({ ...item, position: i + 1 })); // 표시용 순위 일치
 
+    users.innerHTML = '';
+    data.forEach((item) => {
+        currentWait += wait;
         const element = createElement(item, refresh);
         users.appendChild(element);
 
         if (refresh) {
-            if (item.last_position !== item.position) {
-                newPosition(element);
-            }
+            if (item.last_position !== item.position) newPosition(element);
         } else {
             displayItem(element, currentWait);
         }
     });
+
+    // ✅ 화면에 사용한 정렬/순위로 store를 동기화(이후 로직 일관성)
+    store = data;
 }
 
 function appendUser(data) {
@@ -417,8 +679,8 @@ function appendUser(data) {
     displayItem(element, 200, true);
 }
 
-function updateUser(data, direction, item,burritoType) {
-    const score = data.score;
+function updateUser(data, direction, item, burritoType) {
+    const { score } = data;
     const scoreEl = item.querySelector('[data-element="score"]');
     const className = (direction === 'up') ? ' tada animated good' : ' shake animated bad';
 
@@ -428,7 +690,7 @@ function updateUser(data, direction, item,burritoType) {
     let scoreUpdated = false;
 
     store = store.slice().map((user) => {
-        let uppdatedUser = Object.assign({}, user);
+        const uppdatedUser = { ...user };
 
         if (user.username === data.username && user.score !== data.score) {
             uppdatedUser.score = data.score;
@@ -449,47 +711,47 @@ function updateUser(data, direction, item,burritoType) {
             }, 1500);
         }, 1000);
     }
-
 }
 
-function updateScore(data, direction,burritoType) {
+function updateScore(data, direction, burritoType) {
     const item = document.querySelector(`[data-uuid="${data.username}"]`);
 
     if (item) {
-        updateUser(data, direction, item,burritoType);
+        updateUser(data, direction, item, burritoType);
     } else {
-        appendUser(data,burritoType);
+        appendUser(data, burritoType);
     }
 }
 
 hey.on('GIVE', async (input) => {
     const username = input[listType];
-    const {data} = await fetcher('userScore', {username, listType, scoreType});
+    const { data } = await fetcher('userScore', {
+        username, listType, scoreType, year: selectedYear, month: selectedMonth,
+    });
     const direction = (data.scoreType === 'inc') ? 'up' : 'down';
-    const burritoType = (data.scoreType === 'inc') ? 'burrito': 'rottenburrito';
-    updateScore(data, direction,burritoType);
-
+    const burritoType = (data.scoreType === 'inc') ? 'burrito' : 'rottenburrito';
+    updateScore(data, direction, burritoType);
 });
 
 hey.on('TAKE_AWAY', async (input) => {
     const username = input[listType];
-    const {data} = await fetcher('userScore', {username, listType, scoreType});
+    const { data } = await fetcher('userScore', {
+        username, listType, scoreType, year: selectedYear, month: selectedMonth,
+    });
     const direction = (data.scoreType === 'inc') ? 'up' : 'down';
-    const burritoType = (data.scoreType === 'inc') ? 'burrito': 'rottenburrito';
-    updateScore(data, direction,burritoType);
+    const burritoType = (data.scoreType === 'inc') ? 'burrito' : 'rottenburrito';
+    updateScore(data, direction, burritoType);
 });
 
-
-
-function rainBurritos(type){
-
-    const burritoType = (type === 'burrito') ? `<i class="rain burrito-rain">${burrito}</i>`: `<i class="rain burrito-rain">${rottenburrito}</i>`;
+function rainBurritos(type) {
+    const burritoType = (type === 'burrito') ? `<i class="rain burrito-rain">${burrito}</i>` : `<i class="rain burrito-rain">${rottenburrito}</i>`;
     for (i = 0; i < 50; i++) {
-        document.getElementById("rain").innerHTML+= burritoType;
+        document.getElementById('rain').innerHTML += burritoType;
     }
 
     setTimeout(() => {
-        var i, elements = document.getElementsByClassName('rain');
+        let i; const
+            elements = document.getElementsByClassName('rain');
         for (i = elements.length; i--;) {
             elements[i].parentNode.removeChild(elements[i]);
         }
