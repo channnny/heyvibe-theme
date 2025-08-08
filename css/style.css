@@ -430,3 +430,21 @@ select{ color: var(--text); }
     box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
     border-radius: 12px;
 }
+
+.scoreboard__user__row div:first-child {
+    padding-right: 0;
+    flex-grow: 0;
+}
+
+.scoreboard__user__row div:first-child {
+    padding-right: 0;
+    flex-grow: 0;
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+}
+.scoreboard__user__row div:first-child img {
+    max-width: 20px;
+    max-height: 20px;
+    object-fit: contain;
+}
